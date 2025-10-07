@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EE MCQ Quiz (Mobile)</title>
+<style>
+  :root{
+    --bg:#0f172a;          /* slate-900 */
+    --card:#111827;        /* gray-900 */
+    --text:#e5e7eb;        /* gray-200 */
+    --muted:#94a3b8;       /* slate-400 */
+    --accent:#22c55e;      /* green-500 */
+    --accent-2:#f43f5e;    /* rose-500 */
+    --brand:#38bdf8;       /* sky-400 */
+    --btn:#1f2937;         /* gray-800 */
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    background: linear-gradient(180deg, #0b1220, #0f172a);
+    color:var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap{max-width: 960px; margin:0 auto; padding: 16px 16px 80px}
+  header{
+    position:sticky; top:0; padding:12px 16px; backdrop-filter: blur(8px);
+    background: rgba(15,23,42,.7); border-bottom: 1px solid rgba(148,163,184,.2);
+    display:flex; align-items:center; gap:12px; z-index:10
+  }
+  header h1{font-size: 18px; margin:0; letter-spacing:.2px}
+  .badge{background:rgba(56,189,248,.15); color:var(--brand); border:1px solid rgba(56,189,248,.35);
+         padding:3px 8px; border-radius:999px; font-size:12px}
+  .card{
+    background: linear-gradient(180deg, #0b1325, #0b1220 60%, #0f172a);
+    border:1px solid rgba(148,163,184,.18);
+    border-radius:16px; padding:16px; box-shadow: 0 10px 35px rgba(0,0,0,.35);
+  }
+  .controls{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0}
+  .controls .row{grid-column: span 2}
+  .btn{
+    display:block; width:100%; padding:14px 16px; border-radius:12px;
+    background:var(--btn); color:var(--text); text-align:center; border:1px solid rgba(148,163,184,.22);
+    font-size:16px; letter-spacing:.2px;
+  }
+  .btn:hover{filter:brightness(1.07)}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background: linear-gradient(180deg, #0ea5e9, #0284c7); border:none}
+  .btn.success{background:linear-gradient(180deg, #22c55e, #16a34a); border:none}
+  .btn.warn{background:linear-gradient(180deg, #f59e0b, #d97706); border:none}
+  .btn.ghost{background:transparent; border:1px dashed rgba(148,163,184,.35)}
+  .grid-4{display:grid; grid-template-columns: 1fr; gap:10px}
+  @media(min-width:520px){ .grid-4{ grid-template-columns: 1fr 1fr } }
+  .qnum{color:var(--muted); font-size:13px; margin-bottom:6px}
+  .topic{color:var(--brand); font-size:13px; margin-left:8px}
+  .question{font-size:18px; margin:8px 0 14px; line-height:1.45}
+  .opt{display:flex; align-items:flex-start; gap:10px; padding:12px 12px; border-radius:12px; background:var(--card);
+       border:1px solid rgba(148,163,184,.18)}
+  .opt .letter{width:28px; height:28px; border-radius:999px; background:#0b1325; display:flex; align-items:center; justify-content:center; border:1px solid rgba(148,163,184,.25); font-weight:600; color:var(--muted)}
+  .opt .text{flex:1; font-size:16px}
+  .opt.btn{cursor:pointer}
+  .opt.correct{border-color: rgba(34,197,94,.65); background:rgba(34,197,94,.12)}
+  .opt.wrong{border-color: rgba(244,63,94,.65); background:rgba(244,63,94,.10)}
+  .muted{color:var(--muted)}
+  .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .spacer{height:10px}
+  .footer-note{font-size:12px; color:var(--muted); margin-top:8px}
+  .pill{padding:4px 8px; border-radius:999px; border:1px solid rgba(148,163,184,.25); font-size:12px}
+  .hidden{display:none !important}
+  .hr{height:1px; background:rgba(148,163,184,.2); margin:12px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="badge">EE Quiz</div>
+  <h1>Environmental Engineering MCQ</h1>
+</header>
+<div class="wrap">
+
+  <div id="screen-home" class="card">
+    <h2>Welcome 👋</h2>
+    <p class="muted">Tap one button to start. Designed for iPhone/Safari and works offline. Your progress & wrong set are saved locally.</p>
+    <div class="controls">
+      <button class="btn primary" id="btn-start-all">Start • All (120)</button>
+      <button class="btn" id="btn-start-30">Quick • 30 random</button>
+      <div class="row">
+        <label class="pill"><input type="checkbox" id="chk-shuffle-q" checked> Shuffle questions</label>
+        <label class="pill"><input type="checkbox" id="chk-shuffle-opts" checked> Shuffle options</label>
+        <label class="pill"><input type="checkbox" id="chk-immediate" checked> Immediate feedback</label>
+      </div>
+      <button class="btn" id="btn-review-wrong">Review last wrong set</button>
+      <button class="btn ghost" id="btn-export-wrong">Export wrong set (JSON)</button>
+      <button class="btn ghost" id="btn-reset">Reset local progress</button>
+      <div class="footer-note">Tip: Share → <b>Add to Home Screen</b> to make it an app.</div>
+    </div>
+  </div>
+
+  <div id="screen-quiz" class="card hidden">
+    <div class="qnum" id="q-meta"></div>
+    <div class="question" id="q-text"></div>
+    <div id="opts" class="grid-4"></div>
+    <div class="spacer"></div>
+    <div class="row">
+      <button class="btn" id="btn-skip">Skip</button>
+      <button class="btn success" id="btn-next">Next</button>
+    </div>
+    <div class="footer-note" id="q-feedback"></div>
+  </div>
+
+  <div id="screen-summary" class="card hidden">
+    <h2>Session summary</h2>
+    <p id="sum-line"></p>
+    <div class="hr"></div>
+    <div id="wrong-list"></div>
+    <div class="hr"></div>
+    <div class="row">
+      <button class="btn primary" id="btn-home">Home</button>
+      <button class="btn" id="btn-review-now">Review wrong now</button>
+      <button class="btn ghost" id="btn-export2">Export wrong JSON</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ========== Data ========== */
+const QUESTIONS = [
+// -- 120 questions (same as CLI version) --
+{"id":1,"topic":"Sustainable Management","question":"The Brundtland definition of Sustainable Development emphasizes:","options":["maximizing GDP today","meeting present needs without compromising future generations’ ability","technology over regulation","zero growth"],"answer":"B"},
+{"id":2,"topic":"Sustainable Management","question":"Australia’s ESD principles include all EXCEPT:","options":["integrating environmental and economic goals","valuing environmental assets","inter- and intra-generational equity","ignoring irreversibility"],"answer":"D"},
+{"id":3,"topic":"Eco-efficiency","question":"Eco-efficiency means:","options":["more value with less environmental impact","more value with more resources","end-of-pipe control","focusing on profits only"],"answer":"A"},
+{"id":4,"topic":"Eco-efficiency","question":"Which is NOT an element of eco-efficiency?","options":["reducing material intensity","reducing energy intensity","increasing toxic dispersion","increasing service intensity"],"answer":"C"},
+{"id":5,"topic":"Eco-efficiency","question":"The rebound effect is when:","options":["noise reflects off walls","efficiency gains are offset by increased demand","membranes bounce back after fouling","CO binds hemoglobin again"],"answer":"B"},
+{"id":6,"topic":"Sustainable Planning","question":"In the planners’ triangle (economy–environment–equity), sustainable planning implies:","options":["optimizing only economy","trade-offs among the three corners","optimizing only environment","optimizing only equity"],"answer":"B"},
+{"id":7,"topic":"4Rs","question":"Which is NOT one of the “4Rs”?","options":["Reduce","Reuse","Refuel","Recycle"],"answer":"C"},
+{"id":8,"topic":"Sustainable Tools","question":"A technical sustainable-management tool is:","options":["eco-efficiency and cleaner production","fiscal subsidies only","litigation only","political advocacy only"],"answer":"A"},
+{"id":9,"topic":"Cleaner Production","question":"Good Housekeeping does NOT include:","options":["leak and spill prevention","better inventory and production planning","turning off idle equipment","changing to a new reactor technology"],"answer":"D"},
+{"id":10,"topic":"Cleaner Production","question":"Input substitution example:","options":["switching to recycled paper","adding a taller chimney","buying more forklifts","relaxing QA/QC"],"answer":"A"},
+{"id":11,"topic":"Cleaner Production","question":"High-cost technology modification typically includes:","options":["better insulation","more efficient process equipment","better layout","more instruments"],"answer":"B"},
+{"id":12,"topic":"Cleaner Production","question":"Product modification for cleaner production includes:","options":["design for reuse","increase durability","minimize harmful substances","all of the above"],"answer":"D"},
+{"id":13,"topic":"Cleaner Production","question":"On-site recovery does NOT include:","options":["heat recovery","process-water recycling","random dumping","materials recovery"],"answer":"C"},
+{"id":14,"topic":"Cleaner Production","question":"Cleaner Production emphasizes:","options":["prevention at the source","only end-of-pipe treatment","ignoring maintenance","exporting wastes"],"answer":"A"},
+{"id":15,"topic":"Cleaner Production","question":"A printing company using vegetable-oil inks and citrus cleaners is applying:","options":["Input substitution + Good housekeeping","Only end-of-pipe","Only product modification","Only technology change"],"answer":"A"},
+{"id":16,"topic":"Cleaner Production","question":"In an on-site waste-heat boiler case, benefits typically include all EXCEPT:","options":["electricity generation","water conservation","GHG reduction","increased acid mist emissions"],"answer":"D"},
+{"id":17,"topic":"LCA","question":"ISO standard defining LCA framework is:","options":["ISO 9001","ISO 14040","ISO 45001","ISO 50001"],"answer":"B"},
+{"id":18,"topic":"LCA","question":"Which is NOT an LCA phase?","options":["Goal and scope","Inventory analysis","Impact assessment","HAZOP"],"answer":"D"},
+{"id":19,"topic":"LCA","question":"LCA usually adopts a:","options":["cradle-to-gate view only","cradle-to-grave view","shipping-only view","end-of-life only"],"answer":"B"},
+{"id":20,"topic":"LCA","question":"LCA inventory typically EXCLUDES:","options":["energy requirements","air and water emissions","solid wastes","market share"],"answer":"D"},
+{"id":21,"topic":"EIA","question":"EIA is best described as:","options":["a profit forecast","a process to predict environmental consequences","an environmental permit by itself","routine monitoring"],"answer":"B"},
+{"id":22,"topic":"EIA","question":"A frequent problem in EIA implementation is:","options":["starting too late in project sequence","too much post-audit","ignoring public involvement","both A and C"],"answer":"D"},
+{"id":23,"topic":"EIA","question":"Australia’s key federal law for MNES is:","options":["Water Act 1974","EPBC Act 1999","NEPA 1969","Clean Air Act 1990"],"answer":"B"},
+{"id":24,"topic":"EIA","question":"A bilateral agreement means the Commonwealth Minister can rely on:","options":["international EIS only","state/territory-accredited assessment process","local council minutes","industry self-reporting"],"answer":"B"},
+{"id":25,"topic":"EIA","question":"In NSW, designated or state-significant development requires:","options":["EMP","EIS (Environmental Impact Statement)","MSDS","SDS"],"answer":"B"},
+{"id":26,"topic":"EIA","question":"Public involvement in EIA is:","options":["optional and late","crucial and occurs early with multiple stages","prohibited","only via referendum"],"answer":"B"},
+{"id":27,"topic":"EIA","question":"Screening in EIA is to:","options":["pick contractors","decide if detailed assessment is needed","calculate CAPEX","finalize mitigation costs"],"answer":"B"},
+{"id":28,"topic":"EIA","question":"Scoping aims to:","options":["select technology vendors","identify significant impacts","set loan conditions","determine taxes"],"answer":"B"},
+{"id":29,"topic":"EIA","question":"After the Minister’s decision, best practice calls for:","options":["no follow-up","monitoring to verify predictions and mitigation","abandoning mitigation","re-screening"],"answer":"B"},
+{"id":30,"topic":"EIA","question":"A simple weighted-matrix comparison of sites implies:","options":["higher total score = lower impact","higher total score = greater impact (if scoring is impact severity)","weighting is irrelevant","site choice is random"],"answer":"B"},
+{"id":31,"topic":"Air Pollution","question":"Primary ambient air quality standards protect:","options":["welfare","public health","buildings only","crops only"],"answer":"B"},
+{"id":32,"topic":"Air Pollution","question":"Secondary ambient standards protect:","options":["public welfare (visibility, crops, materials)","clinical patients only","workplace only","indoor air only"],"answer":"A"},
+{"id":33,"topic":"Air Pollution","question":"Carbon monoxide binds hemoglobin with an affinity roughly:","options":["25× O2","250× O2","same as O2","1000× O2"],"answer":"B"},
+{"id":34,"topic":"Air Pollution","question":"An indoor source of CO is NOT:","options":["blocked chimneys","idling vehicles in garage","unvented gas heaters","electric cooktop"],"answer":"D"},
+{"id":35,"topic":"Air Pollution","question":"Ozone depletion vs global warming:","options":["identical problems","different, with limited overlaps (e.g., CFCs)","contradictory by definition","both dominated by CO2"],"answer":"B"},
+{"id":36,"topic":"Air Pollution","question":"The pollutant contributing most to warming among options is:","options":["CO2","CFCs","O3 only","CO only"],"answer":"A"},
+{"id":37,"topic":"Air Pollution","question":"Time-Weighted Average (TWA) uses weights of:","options":["sample count","time intervals","peak value","median value"],"answer":"B"},
+{"id":38,"topic":"Air Pollution","question":"For a linear segment between two sampling points, the segment concentration used in TWA is:","options":["start value","end value","average of the two","minimum value"],"answer":"C"},
+{"id":39,"topic":"Air Pollution","question":"Given data (min, ppm): (0,5), (3,7), (6,4), (9,6), (12,8), (15,10), the 15-min TWA is:","options":["5.5","6.5","7.5","8.5"],"answer":"B"},
+{"id":40,"topic":"Air Pollution","question":"Primary vs secondary standards are set mainly for:","options":["workers vs managers","animals vs plants","health vs welfare","indoor vs outdoor"],"answer":"C"},
+{"id":41,"topic":"Air Pollution","question":"A typical adverse CO health effect is:","options":["hemoglobin oxidation to MetHb by CO","tissue hypoxia due to carboxyhemoglobin","pulmonary fibrosis","asthma only"],"answer":"B"},
+{"id":42,"topic":"Air Pollution","question":"Household action to prevent CO poisoning:","options":["run cars with garage door closed","block vents to save heat","inspect and vent combustion appliances","use incense"],"answer":"C"},
+{"id":43,"topic":"Air Pollution","question":"In standards and sampling, which is FALSE?","options":["TWA depends on exposure duration","Short-term peaks may be regulated separately","Number of samples alone determines TWA","Averaging time matters"],"answer":"C"},
+{"id":44,"topic":"Air Pollution","question":"Stratospheric ozone depletion mainly relates to:","options":["CFCs/halons","SO2","CO","PM10"],"answer":"A"},
+{"id":45,"topic":"Air Pollution","question":"Visibility and material damage are addressed by:","options":["primary standards","secondary standards","occupational TLVs only","indoor guidelines only"],"answer":"B"},
+{"id":46,"topic":"Noise","question":"Add 68, 82, 76, 68, 74, 81 dB correctly:","options":["78 dB","≈85.6 dB","90 dB","449 dB"],"answer":"B"},
+{"id":47,"topic":"Noise","question":"Lx (e.g., L40) means the level that is:","options":["not reached x% of time","exceeded for x% of the time","the average","the median"],"answer":"B"},
+{"id":48,"topic":"Noise","question":"“L40 < 80 dBA” means:","options":["80 dBA never exceeded","80 dBA is exceeded less than 40% of the time","always exceeded","exactly 40% exceeded"],"answer":"B"},
+{"id":49,"topic":"Noise","question":"If the standard is “L40 of 80 dBA,” the interpretation is:","options":["40 dBA for 80%","the level that is exceeded for 40% of the time is 80 dBA","never exceed 80 dBA","Leq = 80 dBA"],"answer":"B"},
+{"id":50,"topic":"Noise","question":"Equivalent continuous level for 5 min at 90 dBA + 50 min at 60 dBA (55 min total):","options":["70.0 dB","≈79.6 dB","60.0 dB","90.0 dB"],"answer":"B"},
+{"id":51,"topic":"Noise","question":"A-weighting (dB(A)) reflects:","options":["equal sensitivity across frequencies","human ear sensitivity (less low-frequency)","only low-frequency emphasis","only high-frequency emphasis"],"answer":"B"},
+{"id":52,"topic":"Noise","question":"Leq calculation weights each level by:","options":["amplitude","duration fraction","10^(L/10) times duration fraction","the larger of two levels"],"answer":"C"},
+{"id":53,"topic":"Noise","question":"To sum two independent sound levels, you should:","options":["add dB values directly","convert to energy (10^(L/10)), sum, then log back","average arithmetically","multiply dB values"],"answer":"B"},
+{"id":54,"topic":"Noise","question":"Long-term high noise can cause:","options":["tooth decay","hearing loss and annoyance","improved sleep","increased oxygen saturation"],"answer":"B"},
+{"id":55,"topic":"Noise","question":"The reference sound intensity I0 used in dB definition is:","options":["1 W/m²","10^-12 W/m²","10^6 W/m²","10^-6 W/m²"],"answer":"B"},
+{"id":56,"topic":"Solid Waste","question":"Major functional elements of SWM include all EXCEPT:","options":["generation","collection","transfer/transport","financial auditing"],"answer":"D"},
+{"id":57,"topic":"Solid Waste","question":"The 4Rs are:","options":["Reduce, Reuse, Recycle, Recover","React, Reduce, Reuse, Recycle","Remove, Reduce, Return, Recycle","Reduce, Reuse, Repair, Report"],"answer":"A"},
+{"id":58,"topic":"Solid Waste","question":"Collection cost typically accounts for about:","options":["10–20% of total","30–40%","75–80%"," >90%"],"answer":"C"},
+{"id":59,"topic":"Solid Waste","question":"Curbside collection compared with backyard collection is usually:","options":["least efficient","more efficient","identical","illegal"],"answer":"B"},
+{"id":60,"topic":"Solid Waste","question":"A transfer station primarily:","options":["burns waste","composts waste","consolidates loads for long-haul transport","landfills waste directly"],"answer":"C"},
+{"id":61,"topic":"Solid Waste","question":"Sanitary landfill vs open dump:","options":["open dump has liners and leachate control","sanitary landfill is uncontrolled","sanitary landfill is engineered with liners and cover","both the same"],"answer":"C"},
+{"id":62,"topic":"Solid Waste","question":"Typical landfill biodegradation phases include all EXCEPT:","options":["adjustment","acid formation","methanogenesis","nitrification"],"answer":"D"},
+{"id":63,"topic":"Solid Waste","question":"A common gas management option is:","options":["passive vents only","active extraction and energy recovery","both A and B","none"],"answer":"C"},
+{"id":64,"topic":"Solid Waste","question":"Leachate BOD5 in young landfills is often:","options":["20–200 mg/L","2,000–30,000 mg/L",">300,000 mg/L","0 mg/L"],"answer":"B"},
+{"id":65,"topic":"Solid Waste","question":"Landfill siting typically avoids areas within ~:","options":["≥30 m of rivers","3 m of rivers","300 m of rivers","no limit"],"answer":"A"},
+{"id":66,"topic":"Solid Waste","question":"A rule of thumb separation from drinking water wells is about:","options":["16 m","160 m","1,600 m","16 km"],"answer":"B"},
+{"id":67,"topic":"Solid Waste","question":"Landfill daily cover contributes to total volume roughly (waste:cover = 5:1):","options":["50%","+20%","+5%","+100%"],"answer":"B"},
+{"id":68,"topic":"Solid Waste","question":"Incineration (waste-to-energy) requires:","options":["high moisture content only","sufficient heating value","zero oxygen","only inert waste"],"answer":"B"},
+{"id":69,"topic":"Solid Waste","question":"The most economical crew size for manual collection tends to be:","options":["very large crews","smaller crews","crews don’t matter","solo always"],"answer":"B"},
+{"id":70,"topic":"Solid Waste","question":"A mixed-waste density for route planning is typically expressed as:","options":["kg/person","kg/m³","kg/day","m³/day"],"answer":"B"},
+{"id":71,"topic":"Solid Waste","question":"(calc) If loose waste mass is 2,430 kg and compacted density is 300 kg/m³, required truck body is at least:","options":["4.1 m³","8.1 m³","12.1 m³","24.3 m³"],"answer":"B"},
+{"id":72,"topic":"Solid Waste","question":"With 3 hours route time and 2 minutes per stop, number of stops ≈:","options":["30","90","120","180"],"answer":"B"},
+{"id":73,"topic":"Hazardous Waste","question":"Hazardous waste is regulated federally in Australia by:","options":["Clean Energy Act","Hazardous Waste (Regulation of Exports and Imports) Act 1989","NEPM Air","Fisheries Act"],"answer":"B"},
+{"id":74,"topic":"Hazardous Waste","question":"Basel Convention primarily addresses:","options":["local littering","transboundary movements of hazardous wastes","greenhouse gases","wildlife trade"],"answer":"B"},
+{"id":75,"topic":"Hazardous Waste","question":"A typical hazardous-waste classification sequence is:","options":["codification → designation → characterization","designation → characterization → codification","characterization → codification → designation","random"],"answer":"B"},
+{"id":76,"topic":"Hazardous Waste","question":"Hazard characteristics include all EXCEPT:","options":["flammability","toxicity","palatability","corrosivity"],"answer":"C"},
+{"id":77,"topic":"Hazardous Waste","question":"A reasonable pathway/fate diagram ends in:","options":["recycling, energy recovery, or secure disposal","abandonment on site","sea dumping","uncontrolled burning"],"answer":"A"},
+{"id":78,"topic":"Hazardous Waste","question":"Source minimisation is:","options":["an end-of-pipe method","upstream reduction of hazardous waste generation","landfill bioreactor","ocean outfall"],"answer":"B"},
+{"id":79,"topic":"Solid Waste","question":"Typical municipal collection efficiency improvement tactic:","options":["out-and-back routing only","well-planned curbside routing","random routing","nighttime only"],"answer":"B"},
+{"id":80,"topic":"Solid Waste","question":"A transfer station is most justified when:","options":["landfill is close","haul distance to landfill is long","waste stream is tiny","cover soil is abundant"],"answer":"B"},
+{"id":81,"topic":"Solid Waste","question":"A key difference between controlled dump and sanitary landfill is:","options":["cover application and engineered liners in sanitary landfill","both have leachate collection","both uncontrolled","controlled dump always has LFG energy recovery"],"answer":"A"},
+{"id":82,"topic":"Solid Waste","question":"Young leachate pH is often:","options":["5.3–8.5","1–3","9–12","neutral only"],"answer":"A"},
+{"id":83,"topic":"Solid Waste","question":"Which stream usually has the highest moisture content in MSW?","options":["glass","food waste","metals","stones"],"answer":"B"},
+{"id":84,"topic":"Solid Waste","question":"Daily cover ratio 5:1 means total landfill volume factor is:","options":["1.0","1.2","1.5","2.0"],"answer":"B"},
+{"id":85,"topic":"Solid Waste","question":"(calc) If total required landfill volume is 420,000 m³ and max fill height is 10 m, land area needed is about:","options":["0.42 ha","4.2 ha","42 ha","420 ha"],"answer":"B"},
+{"id":86,"topic":"Solid Waste","question":"“Curbside set-out/set-back” method means:","options":["collectors enter houses","containers placed at kerb and returned","open dumping","no containerization"],"answer":"B"},
+{"id":87,"topic":"Solid Waste","question":"To reduce transfer-station turnaround time:","options":["use smaller trailers only","use larger haul vehicles and direct floor loading","ban scales","increase queueing"],"answer":"B"},
+{"id":88,"topic":"Solid Waste","question":"Heating value of organics (wet basis) compared with inorganics is:","options":["higher","the same","lower","undefined"],"answer":"A"},
+{"id":89,"topic":"Solid Waste","question":"Main goal of collection routing is to:","options":["maximize distance","minimize travel time and deadhead","minimize crew safety","maximize turns"],"answer":"B"},
+{"id":90,"topic":"Solid Waste","question":"A typical mixed MSW transfer-station benefit is:","options":["slower consolidation","reduced haul costs per tonne","higher odor generation by design","mandatory incineration"],"answer":"B"},
+{"id":91,"topic":"Air Pollution Control","question":"A cyclone primarily removes:","options":["gases","coarse particulates via inertia","vapors","only PM2.5"],"answer":"B"},
+{"id":92,"topic":"Air Pollution Control","question":"An electrostatic precipitator removes:","options":["fine particles by electrostatic charging","NOx via oxidation","SO2 via absorption","CO via catalytic oxidation"],"answer":"A"},
+{"id":93,"topic":"Air Pollution Control","question":"Fabric filters (baghouses) need attention to:","options":["bag cleaning and pressure drop","both","neither","voltage control"],"answer":"B"},
+{"id":94,"topic":"Air Pollution Control","question":"Gas absorption columns are best for:","options":["PM removal","soluble gases (e.g., SO2)","inert gases","CO removal"],"answer":"B"},
+{"id":95,"topic":"Air Pollution Control","question":"Adsorption on activated carbon is suited for:","options":["VOCs","CO2","N2","dust only"],"answer":"A"},
+{"id":96,"topic":"Air Pollution Control","question":"Low-NOx burners reduce NOx primarily by:","options":["increasing temperature","staged combustion / lower peak flame temperature","adding more oxygen","increasing pressure"],"answer":"B"},
+{"id":97,"topic":"Air Pollution Control","question":"Wet scrubbers also aid in:","options":["cooling and PM capture","only heating","ozone formation","CO production"],"answer":"A"},
+{"id":98,"topic":"Air Pollution Control","question":"Catalytic converters mainly oxidize/reduce:","options":["CO, HC, and NOx","PM2.5","SO2","O3"],"answer":"A"},
+{"id":99,"topic":"Air Pollution Control","question":"A key control-selection factor is:","options":["stack color","pollutant form (gas/PM), concentration, flow and temperature","brand of the device","unit color"],"answer":"B"},
+{"id":100,"topic":"Membranes","question":"Combining pretreatment (MF/UF) with RO is mainly to:","options":["make membranes prettier","reduce brine","control fouling and protect RO","increase salinity"],"answer":"C"},
+{"id":101,"topic":"Membranes","question":"RO salt rejection (%) is approximately:","options":["Cp/Cf ×100","(1 − Cp/Cf)×100","Qp/Qf ×100","Cf/Cp ×100"],"answer":"B"},
+{"id":102,"topic":"Membranes","question":"Flux J in LMH equals:","options":["Qp/A with Qp in L/h and A in m²","Qf/A","Cp/Cf","TMP/K"],"answer":"A"},
+{"id":103,"topic":"Membranes","question":"Permeability K (LMH/bar) is:","options":["TMP/J","J/TMP","J·TMP","Qp/Qf"],"answer":"B"},
+{"id":104,"topic":"Membranes","question":"If Qp=150 m³/h through A=6000 m², J equals:","options":["15 LMH","25 LMH","50 LMH","2.5 LMH"],"answer":"B"},
+{"id":105,"topic":"Membranes","question":"With K=80 LMH/bar and J=25 LMH, TMP is:","options":["0.08 bar","0.3125 bar","3.125 bar","8 bar"],"answer":"B"},
+{"id":106,"topic":"Membranes","question":"1 LMH equals (approximately) in m/s:","options":["2.78×10^-6","2.78×10^-7","2.78×10^-5","2.78×10^-8"],"answer":"B"},
+{"id":107,"topic":"Membranes","question":"Seawater vs brackish water TDS:","options":["seawater 1–15 g/L; brackish 15–40 g/L","seawater ~15–40 g/L; brackish ~1–15 g/L","both <1 g/L","both >100 g/L"],"answer":"B"},
+{"id":108,"topic":"Membranes","question":"Energy share in SWRO plants is dominated by:","options":["pretreatment","high-pressure RO (≈70% typical)","post-treatment","admin"],"answer":"B"},
+{"id":109,"topic":"Membranes","question":"A common pretreatment dosing before RO is:","options":["fertilizer","antiscalant; and sodium metabisulfite to neutralize chlorine","mercury","ammonia"],"answer":"B"},
+{"id":110,"topic":"Membranes","question":"Energy recovery devices in SWRO are:","options":["only turbines","isobaric or centrifugal devices transferring brine pressure to feed","solar cells","batteries"],"answer":"B"},
+{"id":111,"topic":"Membranes","question":"Forward osmosis uses:","options":["high hydraulic pressure on feed","osmotic pressure difference (draw solution)","electric fields","heat only"],"answer":"B"},
+{"id":112,"topic":"Membranes","question":"Pressure-retarded osmosis (PRO) is aimed at:","options":["power generation from mixing fresh and saline waters","desalination only","wastewater neutralization","chlorination"],"answer":"A"},
+{"id":113,"topic":"Membranes","question":"Membrane distillation is driven by:","options":["high hydraulic pressure","vapor pressure difference using low-grade heat (~50–90°C)","electric field","gravity only"],"answer":"B"},
+{"id":114,"topic":"Membranes","question":"Electrodialysis relies on:","options":["size exclusion","ion-exchange membranes with applied electric field","adsorption","precipitation"],"answer":"B"},
+{"id":115,"topic":"Membranes","question":"The dominant RO module configuration is:","options":["plate-and-frame","tubular","spiral-wound","tray tower"],"answer":"C"},
+{"id":116,"topic":"Membranes","question":"A typical UF application in water treatment is:","options":["removing dissolved salts","removing viruses/NOM and as RO pretreatment","cracking hydrocarbons","removing CO2"],"answer":"B"},
+{"id":117,"topic":"Membranes","question":"Membrane fouling is mitigated by all EXCEPT:","options":["adequate pretreatment (MF/UF)","crossflow and turbulence","antiscalant/biocides","increasing feed TSS intentionally"],"answer":"D"},
+{"id":118,"topic":"Membranes","question":"Osmotic pressure equation is:","options":["π = MRT","π = iMRT (for electrolytes)","π = RT/M","π = PV = nRT"],"answer":"B"},
+{"id":119,"topic":"Membranes","question":"With π=18.6 atm at 27°C (300 K) for a non-electrolyte (i=1), the molar concentration M is approximately:","options":["0.76 mol/L","0.38 mol/L","1.52 mol/L","0.076 mol/L"],"answer":"A"},
+{"id":120,"topic":"Membranes","question":"An advanced water reuse RO plant mainly removes:","options":["sand only","very small solutes like salts and trace organics (~0.0005 μm cutoff)","only bacteria","only turbidity"],"answer":"B"}
+];
+
+/* ========== Helpers ========== */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const store = {
+  set(k,v){ localStorage.setItem(k, JSON.stringify(v)); },
+  get(k, d=null){ try{ return JSON.parse(localStorage.getItem(k)) ?? d }catch(e){ return d } },
+  del(k){ localStorage.removeItem(k) }
+};
+function shuffle(arr){ return arr.map(v => [Math.random(), v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]) }
+function dlJSON(filename, obj){
+  const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove() }, 1000);
+}
+
+/* ========== State ========== */
+let session = {
+  questions: [],
+  idx: 0,
+  answered: 0,
+  wrong: [],
+  cfg: { shuffleQ:true, shuffleOpts:true, immediate:true }
+};
+
+/* ========== UI bindings ========== */
+$("#chk-shuffle-q").addEventListener("change", e => session.cfg.shuffleQ = e.target.checked);
+$("#chk-shuffle-opts").addEventListener("change", e => session.cfg.shuffleOpts = e.target.checked);
+$("#chk-immediate").addEventListener("change", e => session.cfg.immediate = e.target.checked);
+
+$("#btn-start-all").addEventListener("click", ()=> startQuiz(QUESTIONS));
+$("#btn-start-30").addEventListener("click", ()=> {
+  let arr = QUESTIONS.slice();
+  if(session.cfg.shuffleQ) arr = shuffle(arr);
+  startQuiz(arr.slice(0,30));
+});
+$("#btn-review-wrong").addEventListener("click", ()=>{
+  const last = store.get("ee_wrong", []);
+  if(!last.length){ alert("No wrong set saved yet. Take a quiz first!"); return }
+  // Map wrong IDs to full questions (fallback to embedded)
+  const map = new Map(QUESTIONS.map(q=>[q.id,q]));
+  const qs = last.map(w => map.get(w.id) || ({...w, options:[w.correct_text, "(dummy)", "(dummy)", "(dummy)"], answer:"A"}));
+  startQuiz(qs);
+});
+$("#btn-export-wrong").addEventListener("click", ()=>{
+  const last = store.get("ee_wrong", []);
+  if(!last.length){ alert("No wrong set yet."); return }
+  dlJSON("wrong_set.json", last);
+});
+$("#btn-reset").addEventListener("click", ()=>{
+  if(confirm("Clear saved wrong set and logs?")){ store.del("ee_wrong"); store.del("ee_logs"); alert("Cleared."); }
+});
+
+$("#btn-next").addEventListener("click", nextQ);
+$("#btn-skip").addEventListener("click", ()=> handleAnswer("SKIP"));
+
+$("#btn-home").addEventListener("click", ()=> show("home"));
+$("#btn-review-now").addEventListener("click", ()=>{
+  const w = store.get("ee_wrong", []);
+  if(!w.length){ alert("No wrong set yet."); return }
+  const map = new Map(QUESTIONS.map(q=>[q.id,q]));
+  const qs = w.map(x=> map.get(x.id) || ({...x, options:[x.correct_text, "(dummy)", "(dummy)", "(dummy)"], answer:"A"}));
+  startQuiz(qs);
+});
+$("#btn-export2").addEventListener("click", ()=>{
+  const last = store.get("ee_wrong", []);
+  if(!last.length){ alert("No wrong set yet."); return }
+  dlJSON("wrong_set.json", last);
+});
+
+/* ========== Quiz Flow ========== */
+function startQuiz(arr){
+  let qs = arr.slice();
+  if(session.cfg.shuffleQ) qs = shuffle(qs);
+  session = {
+    questions: qs, idx: 0, answered: 0, wrong: [],
+    cfg: session.cfg
+  };
+  show("quiz");
+  renderQ();
+}
+
+function renderQ(){
+  const q = session.questions[session.idx];
+  $("#q-meta").innerHTML = `[${session.idx+1}/${session.questions.length}] <span class="topic">${q.topic||""}</span>`;
+  $("#q-text").textContent = q.question;
+  $("#q-feedback").textContent = "";
+
+  const letters = ["A","B","C","D"];
+  const original = {"A":0,"B":1,"C":2,"D":3}[q.answer.trim().toUpperCase()];
+  let order = [0,1,2,3];
+  if(session.cfg.shuffleOpts) order = shuffle(order);
+  const correctIdx = order.indexOf(original);
+  const optsDiv = $("#opts");
+  optsDiv.innerHTML = "";
+  order.forEach((optIndex, i)=>{
+    const opt = document.createElement("button");
+    opt.className = "opt btn";
+    opt.dataset.letter = letters[i];
+    opt.dataset.correct = (i===correctIdx) ? "1" : "0";
+    opt.innerHTML = `<div class="letter">${letters[i]}</div><div class="text">${q.options[optIndex]}</div>`;
+    opt.addEventListener("click", ()=> handleAnswer(letters[i], i, correctIdx, q.options[order[correctIdx]]));
+    optsDiv.appendChild(opt);
+  });
+}
+
+function handleAnswer(letter, chosenIdx=null, correctIdx=null, correctText=""){
+  const q = session.questions[session.idx];
+  const letters = ["A","B","C","D"];
+  const opts = $$("#opts .opt");
+  // evaluate
+  let isCorrect = false;
+  let correctLetter = "";
+  if(letter === "SKIP"){
+    isCorrect = false;
+    correctLetter = letters[correctIdx ?? 0];
+  }else{
+    correctLetter = letters[correctIdx];
+    isCorrect = (chosenIdx === correctIdx);
+  }
+
+  // feedback styling
+  if(session.cfg.immediate){
+    opts.forEach((el,i)=>{
+      el.disabled = true;
+      if(i===correctIdx) el.classList.add("correct");
+      if(chosenIdx!==null && i===chosenIdx && chosenIdx!==correctIdx) el.classList.add("wrong");
+    });
+    $("#q-feedback").textContent = isCorrect ? "Nice! Correct ✅" : `Correct: ${correctLetter} — ${correctText}`;
+  }
+  // record
+  session.answered++;
+  if(!isCorrect){
+    session.wrong.push({
+      id:q.id, topic:q.topic||"", question:q.question,
+      your_answer: letter==="SKIP"?"SKIP":letters[chosenIdx],
+      your_text: letter==="SKIP"?"":opts[chosenIdx]?.querySelector(".text")?.textContent || "",
+      correct_letter: correctLetter,
+      correct_text: correctText
+    });
+  }
+}
+
+function nextQ(){
+  if(session.idx < session.questions.length - 1){
+    session.idx++;
+    renderQ();
+  }else{
+    finish();
+  }
+}
+
+function finish(){
+  show("summary");
+  const total = session.questions.length;
+  const wrongN = session.wrong.length;
+  const correctN = total - wrongN;
+  $("#sum-line").textContent = `Answered: ${total}, Correct: ${correctN}, Incorrect: ${wrongN}`;
+
+  // wrong list
+  const box = $("#wrong-list");
+  box.innerHTML = "";
+  if(!wrongN){ box.innerHTML = "<p>🎉 No mistakes this time.</p>"; }
+  else{
+    session.wrong.forEach(w=>{
+      const div = document.createElement("div");
+      div.className = "card";
+      div.style.margin = "8px 0";
+      div.innerHTML = `<div class="qnum">${w.topic}</div>
+        <div class="question">${w.question}</div>
+        <div class="muted">Your answer: <b>${w.your_answer}</b> ${w.your_text?("— "+w.your_text):""}</div>
+        <div>✅ Correct: <b>${w.correct_letter}</b> — ${w.correct_text}</div>`;
+      box.appendChild(div);
+    });
+  }
+
+  // save wrong set & log
+  store.set("ee_wrong", session.wrong);
+  const logs = store.get("ee_logs", []);
+  logs.push({ts:new Date().toISOString(), total, correct: correctN, wrong: wrongN});
+  store.set("ee_logs", logs);
+}
+
+/* screens */
+function show(which){
+  $("#screen-home").classList.toggle("hidden", which!=="home");
+  $("#screen-quiz").classList.toggle("hidden", which!=="quiz");
+  $("#screen-summary").classList.toggle("hidden", which!=="summary");
+}
+show("home");
+</script>
+</body>
+</html>
